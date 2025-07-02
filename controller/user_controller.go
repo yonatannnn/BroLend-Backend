@@ -2,6 +2,7 @@ package controller
 
 import (
 	"brolend/domain"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,16 +23,16 @@ func (uc *UserController) Register(c *gin.Context) {
 	var user domain.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
-		return 
+		return
 	}
 
 	userID, err, token := uc.uu.Register(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
-		return 
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "User created successfully", "userID": userID, "token": token})
-	return 
+	return
 
 }
 
@@ -45,58 +46,61 @@ func (uc *UserController) Update(c *gin.Context) {
 	err := uc.uu.Update(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
-		return 
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User updated successfully",
 	})
-	return 
+	return
 }
 
 func (uc *UserController) Login(c *gin.Context) {
-	username := c.Param("username")
-	password := c.Param("password")
-
-	userID, err, token := uc.uu.Login(username, password)
+	usr := domain.User{}
+	if err := c.ShouldBindJSON(&usr); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+	userID, err, token := uc.uu.Login(usr.Username, usr.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
-		return 
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Login successful", "userID": userID, "token": token})
-	return 
+	c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": userID, "token": token})
+	return
 }
 
 func (uc *UserController) FindUserByUsername(c *gin.Context) {
 	username := c.Param("username")
+	fmt.Println("username", username)
 	user, err := uc.uu.Search(username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
-		return 
+		return
 	}
 	c.JSON(http.StatusOK, user)
-	return 
+	return
 }
 
 func (uc *UserController) DeleteUser(c *gin.Context) {
-	userIDParam := c.Param("username")
+	userIDParam := c.Param("user_id")
 	userID, err := primitive.ObjectIDFromHex(userIDParam)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, "Invalid user ID")
-		return 
+		return
 	}
 
 	err = uc.uu.Delete(userID)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
-		return 
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User deleted successfully",
 	})
 
-	return 
+	return
 }

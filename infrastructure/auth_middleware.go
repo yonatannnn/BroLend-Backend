@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -27,12 +28,14 @@ func JWTMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		fmt.Printf("token.Valid: %v\n", token.Valid)
+		fmt.Printf("token.Claims: %#v\n", token.Claims)
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			c.Set("user_id", claims["user_id"])
-			c.Set("username", claims["username"])
-			c.Set("first_name", claims["first_name"])
-			c.Set("last_name", claims["last_name"])
+		if claims, ok := token.Claims.(*jwt.MapClaims); ok && token.Valid {
+			c.Set("user_id", (*claims)["user_id"])
+			c.Set("username", (*claims)["username"])
+			c.Set("first_name", (*claims)["first_name"])
+			c.Set("last_name", (*claims)["last_name"])
 		} else {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
 			c.Abort()

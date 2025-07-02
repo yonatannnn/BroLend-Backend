@@ -4,6 +4,7 @@ import (
 	"brolend/domain"
 	"brolend/infrastructure"
 	"errors"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -56,15 +57,15 @@ func (u *userUsecase) Register(user domain.User) (string, error, string) {
 		return "", errors.New("Username already exists"), ""
 	}
 
-	_, err = u.userRepository.Create(&user)
-	if err != nil {
-		return "", errors.New("Error creating user"), ""
-	}
-
 	// Generate JWT token
 	token, err := u.jwtService.GenerateToken(user)
 	if err != nil {
 		return "", errors.New("Error generating token"), ""
+	}
+
+	_, err = u.userRepository.Create(&user)
+	if err != nil {
+		return "", errors.New("Error creating user"), ""
 	}
 
 	return user.UserID, nil, token
@@ -73,6 +74,7 @@ func (u *userUsecase) Register(user domain.User) (string, error, string) {
 func (u *userUsecase) Search(username string) (*domain.User, error) {
 	user, err := u.userRepository.FindByUsername(username)
 	if err != nil {
+		fmt.Println("err", err)
 		return nil, errors.New("User not found")
 	}
 	return user, nil
@@ -97,7 +99,7 @@ func (u *userUsecase) Update(updatedUser domain.User) error {
 	}
 
 	// Update user in repository
-	err = u.userRepository.Update(&updatedUser)
+	err = u.userRepository.Update(updatedUser)
 	if err != nil {
 		return errors.New("Error updating user")
 	}

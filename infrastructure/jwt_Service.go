@@ -23,7 +23,7 @@ func NewJwtService(secretKey string) JWTService {
 }
 
 func (js *jwtService) GenerateToken(user domain.User) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username":   user.Username,
 		"user_id":    user.UserID,
 		"first_name": user.FirstName,

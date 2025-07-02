@@ -4,6 +4,7 @@ import (
 	"brolend/domain"
 	"context"
 	"errors"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -18,7 +19,7 @@ type userRepository struct {
 func NewUserRepository(dbc *mongo.Collection, ctx context.Context) domain.UserRepository {
 	return &userRepository{
 		dbc: dbc,
-		ctx: context.TODO(),
+		ctx: ctx,
 	}
 }
 
@@ -36,7 +37,7 @@ func (ur *userRepository) Create(user *domain.User) (string, error) {
 
 func (ur *userRepository) FindByID(id primitive.ObjectID) (*domain.User, error) {
 	var user domain.User
-	err := ur.dbc.FindOne(ur.ctx, bson.D{{"_id", id}}).Decode(&user)
+	err := ur.dbc.FindOne(ur.ctx, bson.D{{Key: "_id", Value: id}}).Decode(&user)
 	if err != nil {
 		return &domain.User{}, errors.New("User not found")
 	}
@@ -45,7 +46,7 @@ func (ur *userRepository) FindByID(id primitive.ObjectID) (*domain.User, error) 
 
 func (ur *userRepository) FindByUserID(id string) (*domain.User, error) {
 	var user domain.User
-	err := ur.dbc.FindOne(ur.ctx, bson.D{{"user_id", id}}).Decode(&user)
+	err := ur.dbc.FindOne(ur.ctx, bson.D{{Key: "user_id", Value: id}}).Decode(&user)
 	if err != nil {
 		return &domain.User{}, errors.New("User not found")
 	}
@@ -54,14 +55,16 @@ func (ur *userRepository) FindByUserID(id string) (*domain.User, error) {
 
 func (ur *userRepository) FindByUsername(username string) (*domain.User, error) {
 	var user domain.User
-	err := ur.dbc.FindOne(ur.ctx, bson.D{{"username", username}}).Decode(&user)
+	fmt.Println("username", username)
+	err := ur.dbc.FindOne(ur.ctx, bson.D{{Key: "username", Value: username}}).Decode(&user)
 	if err != nil {
 		return &domain.User{}, errors.New("User not found")
 	}
 	return &user, nil
 }
-func (ur *userRepository) Update(user *domain.User) error {
-	filter := bson.D{bson.E{"_id", user.ID}}
+
+func (ur *userRepository) Update(user domain.User) error {
+	filter := bson.D{bson.E{Key: "_id", Value: user.ID}}
 	updatedFields := bson.D{}
 	if user.Username != "" {
 		updatedFields = append(updatedFields, bson.E{Key: "username", Value: user.Username})
@@ -90,7 +93,7 @@ func (ur *userRepository) Update(user *domain.User) error {
 }
 
 func (ur *userRepository) DeleteUser(objID primitive.ObjectID) error {
-	filter := bson.D{{"_id", objID}}
+	filter := bson.D{{Key: "_id", Value: objID}}
 	err := ur.dbc.FindOneAndDelete(ur.ctx, filter)
 	if err.Err() != nil {
 		return errors.New("Failed to delete user")
