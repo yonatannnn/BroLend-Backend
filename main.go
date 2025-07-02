@@ -31,11 +31,15 @@ func main() {
 	fmt.Println("JWT_SECRET", os.Getenv("JWT_SECRET"))
 	userUsecase := usecase.NewUserUsecase(userRepo, passwordService, jwtService)
 	userController := controller.NewUserController(userUsecase)
+	debtCollection := client.Database(dbName).Collection("debts")
+	debtRepo := repository.NewDebtRepository(debtCollection, context.TODO())
+	debtUsecase := usecase.NewDebtUsecase(debtRepo)
+	debtController := controller.NewDebtController(debtUsecase)
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"
 	}
-	r := router.SetupRouter(userController)
+	r := router.SetupRouter(userController, debtController)
 	r.Run(":" + port)
 }
