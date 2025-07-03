@@ -16,6 +16,7 @@ func SetupRouter(uc *controller.UserController, debtController *controller.DebtC
 	{
 		auth.PUT("/user", uc.Update)
 		auth.DELETE("/user/:user_id", uc.DeleteUser)
+		auth.GET("/user/:id", uc.FindUserByID)
 		auth.GET("/user/:username", uc.FindUserByUsername)
 		auth.POST("/debt", debtController.CreateDebt)
 		auth.POST("/debt/:id/accept", debtController.AcceptDebt)
