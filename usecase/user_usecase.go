@@ -122,3 +122,11 @@ func (u *userUsecase) Delete(objId primitive.ObjectID) error {
 
 	return nil
 }
+
+func (u *userUsecase) FindByID(id primitive.ObjectID) (*domain.User, error) {
+	user, err := u.userRepository.FindByID(id)
+	if err != nil || user == nil {
+		return nil, errors.New("user not found")
+	}
+	return user, nil
+}

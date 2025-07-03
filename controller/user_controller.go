@@ -113,3 +113,24 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 
 	return
 }
+
+func (uc *UserController) FindUserByID(c *gin.Context) {
+	idParam := c.Param("id")
+	objID, err := primitive.ObjectIDFromHex(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+	user, err := uc.uu.FindByID(objID)
+	if err != nil {
+		switch err.Error() {
+		case "user not found":
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+	c.JSON(http.StatusOK, user)
+}

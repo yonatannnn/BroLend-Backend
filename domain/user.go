@@ -28,4 +28,5 @@ type UserUsecase interface {
 	Search(username string) (*User, error)
 	Update(user User) error
 	Delete(objId primitive.ObjectID) error
+	FindByID(id primitive.ObjectID) (*User, error)
 }
