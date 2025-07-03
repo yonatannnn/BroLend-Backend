@@ -15,7 +15,7 @@ func SetupRouter(uc *controller.UserController, debtController *controller.DebtC
 	auth.Use(middleware.JWTMiddleware())
 	{
 		auth.PUT("/user", uc.Update)
-		auth.DELETE("/user/:user_id", uc.DeleteUser)
+		auth.DELETE("/user/:user_id", uc.DeleteUser) 
 		auth.GET("/user/:username", uc.FindUserByUsername)
 		auth.GET("/user/id/:id", uc.FindUserByID)
 		auth.POST("/debt", debtController.CreateDebt)
