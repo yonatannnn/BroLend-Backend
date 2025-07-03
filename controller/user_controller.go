@@ -61,13 +61,22 @@ func (uc *UserController) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
-	userID, err, token := uc.uu.Login(usr.Username, usr.Password)
+	user, err, token := uc.uu.Login(usr.Username, usr.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+		switch err.Error() {
+		case "user not found":
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		case "wrong password":
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Wrong password"})
+			return
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": userID, "token": token})
+	c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "token": token})
 	return
 }
 
